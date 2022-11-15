@@ -5,6 +5,13 @@ fn main() {
     let source = "interface User { 
         required id -> String;
         optional username -> String;
+
+        interface Book {
+            required id -> String;
+            optional title -> String;
+            optional published -> Boolean;
+            required author -> String;
+        };
     };";
     let tokens = get_tokens(source.clone());
     let tree = parse_tokens(tokens);

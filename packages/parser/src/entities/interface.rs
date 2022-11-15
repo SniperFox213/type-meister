@@ -1,6 +1,6 @@
 use lexer::tokens::{TokenDeclaration, TokenType};
 use core::ops::Range;
-use crate::{Node, helpers::create_linear_numbers_array};
+use crate::{Node, helpers::create_linear_numbers_array, Entity};
 
 #[derive(Debug)]
 pub struct Interface {
@@ -19,6 +19,7 @@ pub struct InterfaceVariable {
 pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
   // Interface information
   let mut name: Option<String> = Option::None;
+  let mut nodes = Vec::<Node>::new();
   let mut variables = Vec::<InterfaceVariable>::new();
 
   // 
@@ -27,8 +28,8 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
   let mut end_index: Option<usize> = Option::None;
 
   for (index, token) in tokens.iter().enumerate() {
-      if index < start_index { continue; };
       if index <= 0 { continue; };
+      if index - 1 < start_index { continue; };
 
       if (is_inside_interface) {
           // Skipping parsed content
@@ -47,7 +48,15 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
                 }
               },
               TokenType::InterfaceDeclaration => {
-                  println!("Parsing interface...");
+                let sub_interface = parse_interface(tokens, index);
+
+                // Adding this range to parsed_indicies
+                for parsed_index in create_linear_numbers_array(sub_interface.range.start, sub_interface.range.end) {
+                  parsed_indicies.push(parsed_index);
+                };
+
+                // Adding this sub_interface to our nodes variable
+                nodes.push(sub_interface);
               },
               TokenType::LeftCurlyBraces => {
                 // Interface is parsed. Checking if we have a semicolon after
@@ -62,7 +71,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
                 panic!("Semicolon expected...");
               },
               _ => {
-                  panic!("Variable or interface declaration expected, got: {:?}", token);
+                panic!("Variable or interface declaration expected, got: {:?}", token);
               },
           };
       } else {
@@ -76,7 +85,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
           } else {
               // Right curcly braces expected
               if token.token_type != TokenType::RightCurlyBraces {
-                  panic!("Right curly braces expected");
+                  panic!("Right curly braces expected, got {:?}", token);
               } else {
                   is_inside_interface = true;
               };
@@ -87,15 +96,17 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
   if end_index == Option::None { panic!("No end index"); };
 
   Node {
-      span: Range {
-        start: tokens.get(start_index).unwrap().span.start, 
-        end: tokens.get(end_index.unwrap()).unwrap().span.end, 
-      },
-      nodes: Vec::new(),
-      entity: Interface {
+    range: Range {
+      start: start_index,
+      end: end_index.unwrap(),
+    },
+    nodes,
+    entity: Entity::Interface(
+      Interface {
         name: name.unwrap(),
-        variables 
+        variables
       }
+    )
   }
 }
 
@@ -146,6 +157,9 @@ fn parse_variable(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (Interf
           match token.token_type.clone() {
             TokenType::StringType => {
               variable_type = Option::Some("String".to_string());
+            },
+            TokenType::BooleanType => {
+              variable_type = Option::Some("Boolean".to_string());
             },
             _ => {
               panic!("Variable type expected, got {:?}", token);
