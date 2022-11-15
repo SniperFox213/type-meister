@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "packages/codegen",
+    "packages/parser",
+    "packages/lexer",
+    "packages/cli"
+]
