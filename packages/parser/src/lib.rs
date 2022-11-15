@@ -1,16 +1,20 @@
 use helpers::create_linear_numbers_array;
 use lexer::tokens::{TokenDeclaration,TokenType};
 use core::ops::Range;
-use entities::interface::{parse_interface, Interface};
+use entities::{interface::{parse_interface, Interface}, enumerate::Enum};
 
 pub mod helpers;
 pub mod entities;
 
-type Entity = Interface;
+#[derive(Debug)]
+enum Entity {
+    Interface(Interface),
+    Enum(Enum),
+}
 
 #[derive(Debug)]
 pub struct Node {
-    pub span: Range<usize>,
+    pub range: Range<usize>,
     pub nodes: Vec<Node>,
     pub entity: Entity,
 }
@@ -22,10 +26,10 @@ pub struct Tree {
 
 impl Tree {
     pub fn add_node(&mut self, node: Node) {
-        let span = node.span.clone();
+        let range = node.range.clone();
         
         // Adding token indecies to parsed_indicies vector
-        for index in create_linear_numbers_array(span.start, span.end) {
+        for index in create_linear_numbers_array(range.start, range.end) {
             if !self.parsed_indicies.contains(&index.clone()) {
                 self.parsed_indicies.push(index);
             };
