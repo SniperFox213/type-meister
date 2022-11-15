@@ -1,7 +1,6 @@
 use logos::Logos;
 use tokens::{TokenDeclaration, TokenType};
 
-pub mod helpers;
 pub mod tokens;
 
 pub fn get_tokens(source: &str) -> Vec<TokenDeclaration> {
