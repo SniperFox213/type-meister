@@ -1,13 +1,13 @@
 pub fn codegen() -> String {
-    "codegen".into()
+	"codegen".into()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+	use super::*;
 
-    #[test]
-    fn it_works() {
-        assert_eq!(codegen(), "codegen".to_string());
-    }
+	#[test]
+	fn it_works() {
+		assert_eq!(codegen(), "codegen".to_string());
+	}
 }
