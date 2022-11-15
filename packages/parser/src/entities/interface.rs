@@ -23,7 +23,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 
   // 
   let mut is_inside_interface = false;
-  let mut parsed_indecies = Vec::<usize>::new();
+  let mut parsed_indicies = Vec::<usize>::new();
   let mut end_index: Option<usize> = Option::None;
 
   for (index, token) in tokens.iter().enumerate() {
@@ -32,7 +32,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 
       if (is_inside_interface) {
           // Skipping parsed content
-          if parsed_indecies.contains(&index) { continue; }; 
+          if parsed_indicies.contains(&index) { continue; }; 
 
           match token.token_type.clone() {
               TokenType::OptionalModifier | TokenType::RequiredModifier => {
@@ -41,9 +41,9 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
                 // Adding this variable to interface's variable list
                 variables.push(variable);
 
-                // Adding this range to parsed_indecies
+                // Adding this range to parsed_indicies
                 for parsed_index in create_linear_numbers_array(range.start, range.end) {
-                  parsed_indecies.push(parsed_index);
+                  parsed_indicies.push(parsed_index);
                 }
               },
               TokenType::InterfaceDeclaration => {
@@ -69,7 +69,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
           if index == start_index + 1 {
               // Interface name expected
               if token.token_type != TokenType::Text {
-                  panic!("Interface name expected");
+                  panic!("Interface name expected, got {:?}", token);
               } else {
                   name = token.value.clone();
               };

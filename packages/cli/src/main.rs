@@ -3,7 +3,7 @@ use parser::{parse_tokens};
 
 fn main() {
     let source = "interface User { 
-        required id String;
+        required id -> String;
         optional username -> String;
     };";
     let tokens = get_tokens(source.clone());

@@ -52,7 +52,7 @@ pub enum TokenType {
     #[error]
     // We can also use this variant to define whitespace,
     // or any other matches we wish to skip.
-    #[regex(r"[ \t\n\f]+", logos::skip)]
+    #[regex(r"[ \t\n\f]+")]
     Error,
 }
 
@@ -61,14 +61,4 @@ pub struct TokenDeclaration {
     pub token_type: TokenType,
     pub value: Option<String>,
     pub span: Range<usize>,
-}
-
-impl TokenDeclaration {
-    pub fn new(token_type: TokenType, value: Option<String>, span: Range<usize>) -> TokenDeclaration {
-        Self {
-            token_type,
-            value,
-            span
-        }
-    }
 }

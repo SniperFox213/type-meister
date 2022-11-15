@@ -13,11 +13,19 @@ pub fn get_tokens(source: &str) -> Vec<TokenDeclaration> {
     while current_token != None {
         match current_token.unwrap() {
             TokenType::Text => {
-                declarations.push(TokenDeclaration::new(TokenType::Text, Option::Some(lexer.slice().to_string()), lexer.span()));
+                declarations.push(TokenDeclaration {
+                    token_type: TokenType::Text,
+                    value: Option::Some(lexer.slice().to_string()),
+                    span: lexer.span()
+                });
             }
-            TokenType::Error => { /* Ignoring... */ }
+            TokenType::Error => { /* Ignoring */ },
             token_type => {
-                declarations.push(TokenDeclaration::new(token_type, Option::None, lexer.span()));
+                declarations.push(TokenDeclaration {
+                    token_type,
+                    value: Option::None,
+                    span: lexer.span()
+                });
             }
         }
 

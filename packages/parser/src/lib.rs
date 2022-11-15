@@ -17,17 +17,17 @@ pub struct Node {
 
 pub struct Tree {
     pub nodes: Vec<Node>,
-    pub parsed_indecies: Vec<usize>,
+    pub parsed_indicies: Vec<usize>,
 }
 
 impl Tree {
     pub fn add_node(&mut self, node: Node) {
         let span = node.span.clone();
         
-        // Adding token indecies to parsed_indecies vector
+        // Adding token indecies to parsed_indicies vector
         for index in create_linear_numbers_array(span.start, span.end) {
-            if !self.parsed_indecies.contains(&index.clone()) {
-                self.parsed_indecies.push(index);
+            if !self.parsed_indicies.contains(&index.clone()) {
+                self.parsed_indicies.push(index);
             };
         };
 
@@ -38,7 +38,7 @@ impl Tree {
     pub fn default() -> Tree {
         Self {
             nodes: Vec::new(),
-            parsed_indecies: Vec::new(),
+            parsed_indicies: Vec::new(),
         }
     }
 }
@@ -48,8 +48,8 @@ pub fn parse_tokens(tokens: Vec<TokenDeclaration>) -> Tree {
     
     for (index, token) in tokens.iter().enumerate() {
         // Checking if we already parsed token on this index
-        if !tree.parsed_indecies.contains(&index.clone()) {
-            match &token.token_type {
+        if !tree.parsed_indicies.contains(&index.clone()) {
+            match token.token_type.clone() {
                 TokenType::InterfaceDeclaration => {
                     let node = parse_interface(&tokens, index);
                     tree.add_node(node);
