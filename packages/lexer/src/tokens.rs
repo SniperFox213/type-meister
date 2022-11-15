@@ -43,6 +43,12 @@ pub enum TokenType {
     #[token(";")]
     Semicolon,
 
+    // 
+    // Enumerates
+    // 
+    #[token("enum")]
+    EnumerateDeclaration,
+
     // Text
     #[regex("[a-zA-Z]+")]
     Text,

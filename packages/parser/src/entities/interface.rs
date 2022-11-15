@@ -2,6 +2,8 @@ use lexer::tokens::{TokenDeclaration, TokenType};
 use core::ops::Range;
 use crate::{Node, helpers::create_linear_numbers_array, Entity};
 
+use super::enumerate::parse_enum;
+
 #[derive(Debug)]
 pub struct Interface {
   pub name: String,
@@ -46,6 +48,18 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
                 for parsed_index in create_linear_numbers_array(range.start, range.end) {
                   parsed_indicies.push(parsed_index);
                 }
+              },
+              TokenType::EnumerateDeclaration => {
+                // Parsing sub-enumerate
+                let sub_enumerate = parse_enum(tokens, index);
+
+                // Adding this range to parsed_indicies
+                for parsed_index in create_linear_numbers_array(sub_enumerate.range.start, sub_enumerate.range.end) {
+                  parsed_indicies.push(parsed_index);
+                };
+
+                // Adding this sub_enumerate to our nodes variable
+                nodes.push(sub_enumerate);
               },
               TokenType::InterfaceDeclaration => {
                 let sub_interface = parse_interface(tokens, index);

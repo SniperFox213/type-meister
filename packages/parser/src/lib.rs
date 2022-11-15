@@ -1,13 +1,13 @@
 use helpers::create_linear_numbers_array;
 use lexer::tokens::{TokenDeclaration,TokenType};
 use core::ops::Range;
-use entities::{interface::{parse_interface, Interface}, enumerate::Enum};
+use entities::{interface::{parse_interface, Interface}, enumerate::{Enum, parse_enum}};
 
 pub mod helpers;
 pub mod entities;
 
 #[derive(Debug)]
-enum Entity {
+pub enum Entity {
     Interface(Interface),
     Enum(Enum),
 }
@@ -58,6 +58,10 @@ pub fn parse_tokens(tokens: Vec<TokenDeclaration>) -> Tree {
                     let node = parse_interface(&tokens, index);
                     tree.add_node(node);
                 }
+                TokenType::EnumerateDeclaration => {
+                    let node = parse_enum(&tokens, index);
+                    tree.add_node(node);
+                },
                 token_type => {
                     // Error
                     panic!("{:?} is not an top-level keyword.", token_type);
