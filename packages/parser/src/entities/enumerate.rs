@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::{helpers::create_linear_numbers_array, Entity, Node};
+use crate::{helpers::create_linear_numbers_array, Entity, Node, Parser};
 use lexer::tokens::{TokenDeclaration, TokenType};
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub struct EnumVariant {
 	pub value: Option<String>,
 }
 
-pub fn parse_enum(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
+pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
 	// Enumerate information
 	let mut name: Option<String> = Option::None;
 	let mut variants: Vec<EnumVariant> = Vec::new();
@@ -25,7 +25,7 @@ pub fn parse_enum(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
 	let mut end_index: Option<usize> = Option::None;
 
 	// Parsing
-	for (index, token) in tokens.iter().enumerate() {
+	for (index, token) in parser.tokens.iter().enumerate() {
 		if index <= 0 {
 			continue;
 		};
@@ -43,7 +43,7 @@ pub fn parse_enum(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
 				// Text expected (or left curly braces)
 				TokenType::Text => {
 					// Parsing enumerate variant...
-					let (variant, range) = parse_variant(tokens, index);
+					let (variant, range) = parse_variant(&parser.tokens, index);
 
 					// Adding this range to parsed_indicies
 					for parsed_index in create_linear_numbers_array(range.start, range.end) {
@@ -56,8 +56,8 @@ pub fn parse_enum(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
 				TokenType::LeftCurlyBraces => {
 					// Enum has ended, checking if we have a semicolon
 					// after this brace
-					if (tokens.len() >= index + 1)
-						&& (tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
+					if (parser.tokens.len() >= index + 1)
+						&& (parser.tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
 					{
 						end_index = Option::Some(index + 1);
 						break;

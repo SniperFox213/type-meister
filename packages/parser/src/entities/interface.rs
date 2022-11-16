@@ -1,4 +1,4 @@
-use crate::{helpers::create_linear_numbers_array, Entity, Node};
+use crate::{helpers::create_linear_numbers_array, Entity, Node, types::{VariableType, parse_variable_type}, Parser};
 use core::ops::Range;
 use lexer::tokens::{TokenDeclaration, TokenType};
 
@@ -14,11 +14,11 @@ pub struct Interface {
 
 pub struct InterfaceVariable {
 	pub name: String,
-	pub variable_type: String,
+	pub variable_type: VariableType,
 	pub is_required: bool,
 }
 
-pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
+pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 	// Interface information
 	let mut name: Option<String> = Option::None;
 	let mut nodes = Vec::<Node>::new();
@@ -29,7 +29,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 	let mut parsed_indicies = Vec::<usize>::new();
 	let mut end_index: Option<usize> = Option::None;
 
-	for (index, token) in tokens.iter().enumerate() {
+	for (index, token) in parser.tokens.iter().enumerate() {
 		if index <= 0 {
 			continue;
 		};
@@ -45,7 +45,8 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 
 			match token.token_type.clone() {
 				TokenType::OptionalModifier | TokenType::RequiredModifier => {
-					let (variable, range) = parse_variable(tokens, index);
+					println!("Parsing variable at {:?} {:?}", index, token);
+					let (variable, range) = parse_variable(parser, index);
 
 					// Adding this variable to interface's variable list
 					variables.push(variable);
@@ -57,7 +58,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 				}
 				TokenType::EnumerateDeclaration => {
 					// Parsing sub-enumerate
-					let sub_enumerate = parse_enum(tokens, index);
+					let sub_enumerate = parse_enum(parser, index);
 
 					// Adding this range to parsed_indicies
 					for parsed_index in create_linear_numbers_array(
@@ -71,7 +72,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 					nodes.push(sub_enumerate);
 				}
 				TokenType::InterfaceDeclaration => {
-					let sub_interface = parse_interface(tokens, index);
+					let sub_interface = parse_interface(parser, index);
 
 					// Adding this range to parsed_indicies
 					for parsed_index in create_linear_numbers_array(
@@ -87,8 +88,8 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 				TokenType::LeftCurlyBraces => {
 					// Interface is parsed. Checking if we have a semicolon after
 					// this brace
-					if (tokens.len() >= index + 1)
-						&& (tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
+					if (parser.tokens.len() >= index + 1)
+						&& (parser.tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
 					{
 						// Ending
 						end_index = Option::Some(index + 1);
@@ -142,21 +143,23 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 }
 
 fn parse_variable(
-	tokens: &Vec<TokenDeclaration>,
+	parser: &Parser,
 	start_index: usize,
 ) -> (InterfaceVariable, Range<usize>) {
 	// Variable options
 	let mut is_required: Option<bool> = Option::None;
 	let mut name: Option<(usize, String)> = Option::None;
-	let mut variable_type: Option<String> = Option::None;
+	let mut variable_type: Option<VariableType> = Option::None;
 
 	let mut end_index: Option<usize> = Option::None;
+	let mut parsed_indicies: Vec<usize> = Vec::new();
 
 	//
-	for (index, token) in tokens.iter().enumerate() {
+	for (index, token) in parser.tokens.iter().enumerate() {
 		if index < start_index {
 			continue;
 		};
+		if parsed_indicies.contains(&index) { continue; };
 
 		// Modifiers or variable name expected (if variable name is not present)
 		if name == Option::None {
@@ -212,11 +215,17 @@ fn parse_variable(
 					// Variable type expected
 					match token.token_type.clone() {
 						TokenType::StringType => {
-							variable_type = Option::Some("String".to_string());
+							let (variable, range) = parse_variable_type(parser, index);
+							variable_type = Option::Some(variable);
+
+							// Adding this range to our parsed_indicies array
+							for parsed_index in create_linear_numbers_array(range.start, range.end) {
+								parsed_indicies.push(parsed_index);
+							}
 						}
-						TokenType::BooleanType => {
-							variable_type = Option::Some("Boolean".to_string());
-						}
+						// TokenType::BooleanType => {
+						// 	variable_type = Option::Some("Boolean".to_string());
+						// }
 						_ => {
 							panic!("Variable type expected, got {:?}", token);
 						}

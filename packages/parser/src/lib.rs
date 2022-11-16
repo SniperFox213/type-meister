@@ -4,10 +4,11 @@ use entities::{
 	interface::{parse_interface, Interface},
 };
 use helpers::create_linear_numbers_array;
-use lexer::tokens::{TokenDeclaration, TokenType};
+use lexer::{tokens::{TokenDeclaration, TokenType}, get_tokens};
 
 pub mod entities;
 pub mod helpers;
+pub mod types;
 
 #[derive(Debug)]
 pub enum Entity {
@@ -20,6 +21,22 @@ pub struct Node {
 	pub range: Range<usize>,
 	pub nodes: Vec<Node>,
 	pub entity: Entity,
+}
+
+pub struct Parser {
+	pub tree: Tree,
+	pub tokens: Vec<TokenDeclaration>,
+	pub source: String,
+}
+
+impl Parser {
+	pub fn default(source: String) -> Parser {
+		Self {
+			tree: Tree::default(),
+			tokens: get_tokens(source.clone().as_str()),
+			source,
+		}
+	}
 }
 
 pub struct Tree {
@@ -50,20 +67,20 @@ impl Tree {
 	}
 }
 
-pub fn parse_tokens(tokens: Vec<TokenDeclaration>) -> Tree {
-	let mut tree = Tree::default();
+pub fn parse_source(source: String) -> Parser {
+	let mut parser = Parser::default(source);
 
-	for (index, token) in tokens.iter().enumerate() {
+	for (index, token) in parser.tokens.iter().enumerate() {
 		// Checking if we already parsed token on this index
-		if !tree.parsed_indicies.contains(&index.clone()) {
+		if !parser.tree.parsed_indicies.contains(&index.clone()) {
 			match token.token_type.clone() {
 				TokenType::InterfaceDeclaration => {
-					let node = parse_interface(&tokens, index);
-					tree.add_node(node);
+					let node = parse_interface(&parser, index);
+					parser.tree.add_node(node);
 				}
 				TokenType::EnumerateDeclaration => {
-					let node = parse_enum(&tokens, index);
-					tree.add_node(node);
+					let node = parse_enum(&parser, index);
+					parser.tree.add_node(node);
 				}
 				token_type => {
 					// Error
@@ -73,5 +90,5 @@ pub fn parse_tokens(tokens: Vec<TokenDeclaration>) -> Tree {
 		};
 	}
 
-	tree
+	parser
 }

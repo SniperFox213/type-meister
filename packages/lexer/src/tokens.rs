@@ -26,7 +26,7 @@ pub enum TokenType {
 	#[token("optional")]
 	OptionalModifier,
 
-	#[token("->")]
+	#[token(":")]
 	VariableConnection,
 
 	// Built-in variables types
@@ -49,16 +49,20 @@ pub enum TokenType {
 	EnumerateDeclaration,
 
 	// Text
-	#[regex("[a-zA-Z]+")]
+	#[regex("[a-zA-Z_-]+")]
 	Text,
 
-	// Logos requires one token variant to handle errors,
-	// it can be named anything you wish.
+	// Multi-line text helpers
+	#[token("\"")]
+	Quotes,
+
+	// Whitespace
+	#[regex(r"[ \t\n\f]+", logos::skip)]
+	Whitespace,
+
+	// Enything else
 	#[error]
-	// We can also use this variant to define whitespace,
-	// or any other matches we wish to skip.
-	#[regex(r"[ \t\n\f]+")]
-	Error,
+	Error
 }
 
 #[derive(Debug, Clone)]
