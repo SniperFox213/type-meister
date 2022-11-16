@@ -57,7 +57,8 @@ pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
 					// Enum has ended, checking if we have a semicolon
 					// after this brace
 					if (parser.tokens.len() >= index + 1)
-						&& (parser.tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
+						&& (parser.tokens.get(index + 1).unwrap().token_type
+							== TokenType::Semicolon)
 					{
 						end_index = Option::Some(index + 1);
 						break;

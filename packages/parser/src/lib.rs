@@ -4,7 +4,10 @@ use entities::{
 	interface::{parse_interface, Interface},
 };
 use helpers::create_linear_numbers_array;
-use lexer::{tokens::{TokenDeclaration, TokenType}, get_tokens};
+use lexer::{
+	get_tokens,
+	tokens::{TokenDeclaration, TokenType},
+};
 
 pub mod entities;
 pub mod helpers;

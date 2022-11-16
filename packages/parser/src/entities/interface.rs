@@ -1,4 +1,8 @@
-use crate::{helpers::create_linear_numbers_array, Entity, Node, types::{VariableType, parse_variable_type}, Parser};
+use crate::{
+	helpers::create_linear_numbers_array,
+	types::{parse_variable_type, VariableType},
+	Entity, Node, Parser,
+};
 use core::ops::Range;
 use lexer::tokens::{TokenDeclaration, TokenType};
 
@@ -89,7 +93,8 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 					// Interface is parsed. Checking if we have a semicolon after
 					// this brace
 					if (parser.tokens.len() >= index + 1)
-						&& (parser.tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
+						&& (parser.tokens.get(index + 1).unwrap().token_type
+							== TokenType::Semicolon)
 					{
 						// Ending
 						end_index = Option::Some(index + 1);
@@ -142,10 +147,7 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 	}
 }
 
-fn parse_variable(
-	parser: &Parser,
-	start_index: usize,
-) -> (InterfaceVariable, Range<usize>) {
+fn parse_variable(parser: &Parser, start_index: usize) -> (InterfaceVariable, Range<usize>) {
 	// Variable options
 	let mut is_required: Option<bool> = Option::None;
 	let mut name: Option<(usize, String)> = Option::None;
@@ -159,7 +161,9 @@ fn parse_variable(
 		if index < start_index {
 			continue;
 		};
-		if parsed_indicies.contains(&index) { continue; };
+		if parsed_indicies.contains(&index) {
+			continue;
+		};
 
 		// Modifiers or variable name expected (if variable name is not present)
 		if name == Option::None {
@@ -219,7 +223,8 @@ fn parse_variable(
 							variable_type = Option::Some(variable);
 
 							// Adding this range to our parsed_indicies array
-							for parsed_index in create_linear_numbers_array(range.start, range.end) {
+							for parsed_index in create_linear_numbers_array(range.start, range.end)
+							{
 								parsed_indicies.push(parsed_index);
 							}
 						}

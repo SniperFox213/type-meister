@@ -62,7 +62,7 @@ pub enum TokenType {
 
 	// Enything else
 	#[error]
-	Error
+	Error,
 }
 
 #[derive(Debug, Clone)]
