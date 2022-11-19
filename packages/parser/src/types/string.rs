@@ -2,11 +2,14 @@ use std::ops::Range;
 
 use lexer::tokens::{TokenDeclaration, TokenType};
 
-use crate::{helpers::{next_token, next_token_index}};
+use crate::helpers::{next_token, next_token_index};
 
 use super::VariableType;
 
-pub fn parse_string(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (VariableType, Range<usize>) {
+pub fn parse_string(
+	tokens: &Vec<TokenDeclaration>,
+	start_index: usize,
+) -> (VariableType, Range<usize>) {
 	// String declaration expected at start index
 	if tokens.get(start_index).unwrap().token_type != TokenType::StringType {
 		panic!(
@@ -25,7 +28,10 @@ pub fn parse_string(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (Vari
 			println!("Parse multiline string!!!");
 
 			// Parsing multi-line const string
-			let (string, range) = parse_multiline_string(tokens, next_token_index(tokens, start_index, Option::Some(2)));
+			let (string, range) = parse_multiline_string(
+				tokens,
+				next_token_index(tokens, start_index, Option::Some(2)),
+			);
 
 			// Updating value and end_index
 			value = Option::Some(string);
@@ -72,13 +78,13 @@ pub fn parse_string(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (Vari
 	}
 }
 
-pub fn parse_multiline_string(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (String, Range<usize>) {
+pub fn parse_multiline_string(
+	tokens: &Vec<TokenDeclaration>,
+	start_index: usize,
+) -> (String, Range<usize>) {
 	// Start token is always a Quote
 	if tokens.get(start_index).unwrap().token_type != TokenType::Quotes {
-		panic!(
-			"Quote expected, got {:?}",
-			tokens.get(start_index).unwrap()
-		);
+		panic!("Quote expected, got {:?}", tokens.get(start_index).unwrap());
 	};
 
 	let mut result: Vec<String> = Vec::new();

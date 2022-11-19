@@ -57,7 +57,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 					for parsed_index in create_linear_numbers_array(range.start, range.end) {
 						parsed_indicies.push(parsed_index);
 					}
-				},
+				}
 				TokenType::EnumerateDeclaration => {
 					// Parsing sub-enumerate
 					let sub_enumerate = parse_enum(tokens, index);
@@ -72,7 +72,7 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 
 					// Adding this sub_enumerate to our nodes variable
 					nodes.push(sub_enumerate);
-				},
+				}
 				TokenType::InterfaceDeclaration => {
 					let sub_interface = parse_interface(tokens, index);
 
@@ -86,13 +86,12 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 
 					// Adding this sub_interface to our nodes variable
 					nodes.push(sub_interface);
-				},
+				}
 				TokenType::LeftCurlyBraces => {
 					// Interface is parsed. Checking if we have a semicolon after
 					// this brace
 					if (tokens.len() >= index + 1)
-						&& (tokens.get(index + 1).unwrap().token_type
-							== TokenType::Semicolon)
+						&& (tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
 					{
 						// Ending
 						end_index = Option::Some(index + 1);
@@ -101,8 +100,8 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 
 					// Semicolon expected...
 					panic!("Semicolon expected...");
-				},
-				TokenType::Whitespace => { /* Ignoring */ },
+				}
+				TokenType::Whitespace => { /* Ignoring */ }
 				_ => {
 					panic!(
 						"Variable or interface declaration expected, got: {:?}",
@@ -120,7 +119,9 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 				};
 			} else {
 				// Ignoring whitespace
-				if token.token_type == TokenType::Whitespace { continue; };
+				if token.token_type == TokenType::Whitespace {
+					continue;
+				};
 
 				// Right curcly braces expected
 				if token.token_type != TokenType::RightCurlyBraces {
@@ -149,8 +150,15 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 	}
 }
 
-fn parse_variable(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (InterfaceVariable, Range<usize>) {
-	println!("Parsing variable at {:?} {:?}", start_index, tokens.get(start_index).clone().unwrap());
+fn parse_variable(
+	tokens: &Vec<TokenDeclaration>,
+	start_index: usize,
+) -> (InterfaceVariable, Range<usize>) {
+	println!(
+		"Parsing variable at {:?} {:?}",
+		start_index,
+		tokens.get(start_index).clone().unwrap()
+	);
 
 	// Variable options
 	let mut is_required: Option<bool> = Option::None;
@@ -233,7 +241,7 @@ fn parse_variable(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (Interf
 							for parsed_index in create_linear_numbers_array(range.start, range.end)
 							{
 								parsed_indicies.push(parsed_index);
-							};
+							}
 						}
 						TokenType::Whitespace => { /* Ignoring */ }
 						_ => {

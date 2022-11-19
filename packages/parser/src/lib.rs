@@ -64,12 +64,12 @@ pub fn get_ast_tree(tokens: Vec<TokenDeclaration>) -> Tree {
 				TokenType::InterfaceDeclaration => {
 					let node = parse_interface(&tokens, index);
 					tree.add_node(node);
-				},
+				}
 				TokenType::EnumerateDeclaration => {
 					let node = parse_enum(&tokens, index);
 					tree.add_node(node);
-				},
-				TokenType::Whitespace => { /* Ignoring */ },
+				}
+				TokenType::Whitespace => { /* Ignoring */ }
 				token_type => {
 					// Error
 					panic!("{:?} is not an top-level keyword.", token_type);

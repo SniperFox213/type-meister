@@ -25,8 +25,14 @@ pub fn get_slice_from_source(source: &str, span: Range<usize>) -> String {
 	chars.into_iter().collect()
 }
 
-pub fn next_token_with_index(tokens: &Vec<TokenDeclaration>, start_index: usize, mut skip: Option<usize>) -> (usize, TokenDeclaration) {
-	if skip == Option::None { skip = Option::Some(1); };
+pub fn next_token_with_index(
+	tokens: &Vec<TokenDeclaration>,
+	start_index: usize,
+	mut skip: Option<usize>,
+) -> (usize, TokenDeclaration) {
+	if skip == Option::None {
+		skip = Option::Some(1);
+	};
 
 	let mut skipped = 0;
 	let mut found_token: Option<(usize, TokenDeclaration)> = Option::None;
@@ -34,21 +40,23 @@ pub fn next_token_with_index(tokens: &Vec<TokenDeclaration>, start_index: usize,
 	// Iterating from start and trying to find next non-whitespace token
 	for (index, token) in tokens.iter().enumerate() {
 		// We need to inclide our start token, so that it'll be skipped
-		if index < start_index { continue; };
+		if index < start_index {
+			continue;
+		};
 
 		match token.token_type.clone() {
-			TokenType::Whitespace => { /* Ignoring */ },
+			TokenType::Whitespace => { /* Ignoring */ }
 			_ => {
 				// Checking if we need to skip this token or to return it
 				if skipped < skip.unwrap() {
 					skipped += 1;
 				} else {
 					found_token = Option::Some((index, token.clone()));
-					break;	
+					break;
 				};
-			},
+			}
 		};
-	};
+	}
 
 	if found_token.is_none() {
 		// Todo ignore this panic?
@@ -58,10 +66,18 @@ pub fn next_token_with_index(tokens: &Vec<TokenDeclaration>, start_index: usize,
 	found_token.unwrap()
 }
 
-pub fn next_token(tokens: &Vec<TokenDeclaration>, start_index: usize, mut skip: Option<usize>) -> TokenDeclaration {
+pub fn next_token(
+	tokens: &Vec<TokenDeclaration>,
+	start_index: usize,
+	mut skip: Option<usize>,
+) -> TokenDeclaration {
 	next_token_with_index(tokens, start_index, skip).1
 }
 
-pub fn next_token_index(tokens: &Vec<TokenDeclaration>, start_index: usize, mut skip: Option<usize>) -> usize {
+pub fn next_token_index(
+	tokens: &Vec<TokenDeclaration>,
+	start_index: usize,
+	mut skip: Option<usize>,
+) -> usize {
 	next_token_with_index(tokens, start_index, skip).0
 }

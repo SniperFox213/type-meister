@@ -1,5 +1,5 @@
 use lexer::get_tokens;
-use parser::{get_ast_tree};
+use parser::get_ast_tree;
 
 fn main() {
 	let source = "

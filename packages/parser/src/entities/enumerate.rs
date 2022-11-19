@@ -1,6 +1,9 @@
 use std::ops::Range;
 
-use crate::{helpers::{create_linear_numbers_array, next_token_index}, Entity, Node, Tree};
+use crate::{
+	helpers::{create_linear_numbers_array, next_token_index},
+	Entity, Node, Tree,
+};
 use lexer::tokens::{TokenDeclaration, TokenType};
 
 #[derive(Debug)]
@@ -57,8 +60,7 @@ pub fn parse_enum(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
 					// Enum has ended, checking if we have a semicolon
 					// after this brace
 					if (tokens.len() >= index + 1)
-						&& (tokens.get(index + 1).unwrap().token_type
-							== TokenType::Semicolon)
+						&& (tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
 					{
 						end_index = Option::Some(index + 1);
 						break;
@@ -150,8 +152,10 @@ fn parse_variant(
 				};
 			} else {
 				// Ignoring whitespace
-				if token.token_type == TokenType::Whitespace { continue; };
-				
+				if token.token_type == TokenType::Whitespace {
+					continue;
+				};
+
 				if value == Option::None {
 					// So here'll go variant value (Text again)
 					if token.token_type != TokenType::Text {
