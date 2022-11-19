@@ -14,6 +14,7 @@ interface User {
     required id: String;
     optional username: String;
     required status: User.Status;
+    required const_variable: String { "Constant value, yeehaaaw!!!" };
 
     enum Status {
         REGISTERED;
