@@ -13,11 +13,11 @@ Examples of currently-working .typm (type meister's file format) files:
 interface User {
     required id: String;
     optional username: String;
-    required is_registered: Boolean;
     required status: User.Status;
 
     enum Status {
-
+        REGISTERED;
+        BANNED;
     };
 };
 ```
@@ -66,7 +66,7 @@ interface Parent {
     };
     ```
 
-    Example of constructors:
+    Example of constructors:  
     *Imagine that the data for this interface is stored in an array in which the first value is the id, the second is the username, and so on. For this case, we make a special constructor that takes this array and rearranges all the values.*  
     ```
     interface Constructor_Test {
