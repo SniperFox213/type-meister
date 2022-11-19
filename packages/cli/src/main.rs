@@ -1,15 +1,21 @@
-use parser::parse_source;
+use lexer::get_tokens;
+use parser::{get_ast_tree};
 
 fn main() {
 	let source = "
-    interface Test { 
-		required required_property: String;
-		optional const_property: String { \"This is a constant\" };
-    };
+    interface Test {
+		optional const_property: String { \"Constant    string variable!\" };
+    
+		enum Status {
+			TEST: untest;
+			UNTEST: test;
+		};
+	};
     ";
-	let parser = parse_source(source.to_string());
+	let tokens = get_tokens(source);
+	let tree = get_ast_tree(tokens);
 
-	for node in parser.tree.nodes.iter() {
+	for node in tree.nodes.iter() {
 		println!("Tree node: {:#?}", node);
 	}
 }

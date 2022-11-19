@@ -1,7 +1,7 @@
 use crate::{
-	helpers::create_linear_numbers_array,
+	helpers::{create_linear_numbers_array, next_token_index},
 	types::{parse_variable_type, VariableType},
-	Entity, Node, Parser,
+	Entity, Node, Tree,
 };
 use core::ops::Range;
 use lexer::tokens::{TokenDeclaration, TokenType};
@@ -22,18 +22,17 @@ pub struct InterfaceVariable {
 	pub is_required: bool,
 }
 
-pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
+pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
 	// Interface information
 	let mut name: Option<String> = Option::None;
 	let mut nodes = Vec::<Node>::new();
 	let mut variables = Vec::<InterfaceVariable>::new();
 
-	//
 	let mut is_inside_interface = false;
 	let mut parsed_indicies = Vec::<usize>::new();
 	let mut end_index: Option<usize> = Option::None;
 
-	for (index, token) in parser.tokens.iter().enumerate() {
+	for (index, token) in tokens.iter().enumerate() {
 		if index <= 0 {
 			continue;
 		};
@@ -49,8 +48,7 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 
 			match token.token_type.clone() {
 				TokenType::OptionalModifier | TokenType::RequiredModifier => {
-					println!("Parsing variable at {:?} {:?}", index, token);
-					let (variable, range) = parse_variable(parser, index);
+					let (variable, range) = parse_variable(tokens, index);
 
 					// Adding this variable to interface's variable list
 					variables.push(variable);
@@ -59,10 +57,10 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 					for parsed_index in create_linear_numbers_array(range.start, range.end) {
 						parsed_indicies.push(parsed_index);
 					}
-				}
+				},
 				TokenType::EnumerateDeclaration => {
 					// Parsing sub-enumerate
-					let sub_enumerate = parse_enum(parser, index);
+					let sub_enumerate = parse_enum(tokens, index);
 
 					// Adding this range to parsed_indicies
 					for parsed_index in create_linear_numbers_array(
@@ -74,9 +72,9 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 
 					// Adding this sub_enumerate to our nodes variable
 					nodes.push(sub_enumerate);
-				}
+				},
 				TokenType::InterfaceDeclaration => {
-					let sub_interface = parse_interface(parser, index);
+					let sub_interface = parse_interface(tokens, index);
 
 					// Adding this range to parsed_indicies
 					for parsed_index in create_linear_numbers_array(
@@ -88,12 +86,12 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 
 					// Adding this sub_interface to our nodes variable
 					nodes.push(sub_interface);
-				}
+				},
 				TokenType::LeftCurlyBraces => {
 					// Interface is parsed. Checking if we have a semicolon after
 					// this brace
-					if (parser.tokens.len() >= index + 1)
-						&& (parser.tokens.get(index + 1).unwrap().token_type
+					if (tokens.len() >= index + 1)
+						&& (tokens.get(index + 1).unwrap().token_type
 							== TokenType::Semicolon)
 					{
 						// Ending
@@ -103,7 +101,8 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 
 					// Semicolon expected...
 					panic!("Semicolon expected...");
-				}
+				},
+				TokenType::Whitespace => { /* Ignoring */ },
 				_ => {
 					panic!(
 						"Variable or interface declaration expected, got: {:?}",
@@ -112,7 +111,7 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 				}
 			};
 		} else {
-			if index == start_index + 1 {
+			if index == next_token_index(tokens, start_index, Option::None) {
 				// Interface name expected
 				if token.token_type != TokenType::Text {
 					panic!("Interface name expected, got {:?}", token);
@@ -120,6 +119,9 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 					name = token.value.clone();
 				};
 			} else {
+				// Ignoring whitespace
+				if token.token_type == TokenType::Whitespace { continue; };
+
 				// Right curcly braces expected
 				if token.token_type != TokenType::RightCurlyBraces {
 					panic!("Right curly braces expected, got {:?}", token);
@@ -147,7 +149,9 @@ pub fn parse_interface(parser: &Parser, start_index: usize) -> Node {
 	}
 }
 
-fn parse_variable(parser: &Parser, start_index: usize) -> (InterfaceVariable, Range<usize>) {
+fn parse_variable(tokens: &Vec<TokenDeclaration>, start_index: usize) -> (InterfaceVariable, Range<usize>) {
+	println!("Parsing variable at {:?} {:?}", start_index, tokens.get(start_index).clone().unwrap());
+
 	// Variable options
 	let mut is_required: Option<bool> = Option::None;
 	let mut name: Option<(usize, String)> = Option::None;
@@ -156,8 +160,10 @@ fn parse_variable(parser: &Parser, start_index: usize) -> (InterfaceVariable, Ra
 	let mut end_index: Option<usize> = Option::None;
 	let mut parsed_indicies: Vec<usize> = Vec::new();
 
-	//
-	for (index, token) in parser.tokens.iter().enumerate() {
+	for (index, token) in tokens.iter().enumerate() {
+		if index <= 0 {
+			continue;
+		}
 		if index < start_index {
 			continue;
 		};
@@ -200,6 +206,7 @@ fn parse_variable(parser: &Parser, start_index: usize) -> (InterfaceVariable, Ra
 				TokenType::Text => {
 					name = Option::Some((index, token.value.clone().unwrap()));
 				}
+				TokenType::Whitespace => { /* Ignoring */ }
 				_ => {
 					panic!(
 						"Variable modifiers or variable name expected, got: {:?}",
@@ -209,33 +216,36 @@ fn parse_variable(parser: &Parser, start_index: usize) -> (InterfaceVariable, Ra
 			}
 		} else {
 			// Name is present.
-			if index == name.clone().unwrap().0 + 1 {
+			if index == next_token_index(tokens, name.clone().unwrap().0, Option::None) {
 				// VariableConnection expected
 				if token.token_type != TokenType::VariableConnection {
-					panic!("-> expected, got {:?}", token);
+					panic!(": expected, got {:?}", token);
 				}
 			} else {
 				if variable_type == Option::None {
 					// Variable type expected
 					match token.token_type.clone() {
 						TokenType::StringType => {
-							let (variable, range) = parse_variable_type(parser, index);
+							let (variable, range) = parse_variable_type(tokens, index);
 							variable_type = Option::Some(variable);
 
 							// Adding this range to our parsed_indicies array
 							for parsed_index in create_linear_numbers_array(range.start, range.end)
 							{
 								parsed_indicies.push(parsed_index);
-							}
+							};
 						}
-						// TokenType::BooleanType => {
-						// 	variable_type = Option::Some("Boolean".to_string());
-						// }
+						TokenType::Whitespace => { /* Ignoring */ }
 						_ => {
 							panic!("Variable type expected, got {:?}", token);
 						}
 					};
 				} else {
+					// Ignoring whitespaces
+					if token.token_type == TokenType::Whitespace {
+						continue;
+					};
+
 					// Semicolon expected
 					if token.token_type != TokenType::Semicolon {
 						panic!("Semicolon expected, got {:?}", token);

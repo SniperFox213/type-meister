@@ -57,7 +57,7 @@ pub enum TokenType {
 	Quotes,
 
 	// Whitespace
-	#[regex(r"[ \t\n\f]+", logos::skip)]
+	#[regex(r"[ \t\n\f]+")]
 	Whitespace,
 
 	// Enything else

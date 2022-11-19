@@ -26,22 +26,6 @@ pub struct Node {
 	pub entity: Entity,
 }
 
-pub struct Parser {
-	pub tree: Tree,
-	pub tokens: Vec<TokenDeclaration>,
-	pub source: String,
-}
-
-impl Parser {
-	pub fn default(source: String) -> Parser {
-		Self {
-			tree: Tree::default(),
-			tokens: get_tokens(source.clone().as_str()),
-			source,
-		}
-	}
-}
-
 pub struct Tree {
 	pub nodes: Vec<Node>,
 	pub parsed_indicies: Vec<usize>,
@@ -70,21 +54,22 @@ impl Tree {
 	}
 }
 
-pub fn parse_source(source: String) -> Parser {
-	let mut parser = Parser::default(source);
+pub fn get_ast_tree(tokens: Vec<TokenDeclaration>) -> Tree {
+	let mut tree = Tree::default();
 
-	for (index, token) in parser.tokens.iter().enumerate() {
+	for (index, token) in tokens.iter().enumerate() {
 		// Checking if we already parsed token on this index
-		if !parser.tree.parsed_indicies.contains(&index.clone()) {
+		if !tree.parsed_indicies.contains(&index) {
 			match token.token_type.clone() {
 				TokenType::InterfaceDeclaration => {
-					let node = parse_interface(&parser, index);
-					parser.tree.add_node(node);
-				}
+					let node = parse_interface(&tokens, index);
+					tree.add_node(node);
+				},
 				TokenType::EnumerateDeclaration => {
-					let node = parse_enum(&parser, index);
-					parser.tree.add_node(node);
-				}
+					let node = parse_enum(&tokens, index);
+					tree.add_node(node);
+				},
+				TokenType::Whitespace => { /* Ignoring */ },
 				token_type => {
 					// Error
 					panic!("{:?} is not an top-level keyword.", token_type);
@@ -93,5 +78,5 @@ pub fn parse_source(source: String) -> Parser {
 		};
 	}
 
-	parser
+	tree
 }

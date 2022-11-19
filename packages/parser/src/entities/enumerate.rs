@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::{helpers::create_linear_numbers_array, Entity, Node, Parser};
+use crate::{helpers::{create_linear_numbers_array, next_token_index}, Entity, Node, Tree};
 use lexer::tokens::{TokenDeclaration, TokenType};
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub struct EnumVariant {
 	pub value: Option<String>,
 }
 
-pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
+pub fn parse_enum(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
 	// Enumerate information
 	let mut name: Option<String> = Option::None;
 	let mut variants: Vec<EnumVariant> = Vec::new();
@@ -25,7 +25,7 @@ pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
 	let mut end_index: Option<usize> = Option::None;
 
 	// Parsing
-	for (index, token) in parser.tokens.iter().enumerate() {
+	for (index, token) in tokens.iter().enumerate() {
 		if index <= 0 {
 			continue;
 		};
@@ -43,7 +43,7 @@ pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
 				// Text expected (or left curly braces)
 				TokenType::Text => {
 					// Parsing enumerate variant...
-					let (variant, range) = parse_variant(&parser.tokens, index);
+					let (variant, range) = parse_variant(tokens, index);
 
 					// Adding this range to parsed_indicies
 					for parsed_index in create_linear_numbers_array(range.start, range.end) {
@@ -56,8 +56,8 @@ pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
 				TokenType::LeftCurlyBraces => {
 					// Enum has ended, checking if we have a semicolon
 					// after this brace
-					if (parser.tokens.len() >= index + 1)
-						&& (parser.tokens.get(index + 1).unwrap().token_type
+					if (tokens.len() >= index + 1)
+						&& (tokens.get(index + 1).unwrap().token_type
 							== TokenType::Semicolon)
 					{
 						end_index = Option::Some(index + 1);
@@ -66,12 +66,13 @@ pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
 
 					panic!("Semicolon expected");
 				}
+				TokenType::Whitespace => { /* Ignoring */ }
 				_ => {
 					panic!("Enum variant name expected, got {:?}", token);
 				}
 			};
 		} else {
-			if index == start_index + 1 {
+			if index == next_token_index(tokens, start_index, Option::None) {
 				// Enum name expected
 				if token.token_type != TokenType::Text {
 					panic!("Enum name expected, got {:?}", token);
@@ -79,6 +80,11 @@ pub fn parse_enum(parser: &Parser, start_index: usize) -> Node {
 
 				name = token.value.clone();
 			} else {
+				// Ignoring whitespaces
+				if token.token_type == TokenType::Whitespace {
+					continue;
+				};
+
 				// Right curly braces expected
 				if token.token_type != TokenType::RightCurlyBraces {
 					panic!("Right curly braces expected, got {:?}", token);
@@ -132,7 +138,7 @@ fn parse_variant(
 		} else {
 			// Next token after name must be VariableConnection (or Semicolon). So let's
 			// check this!
-			if index == name.clone().unwrap().0 + 1 {
+			if index == next_token_index(tokens, name.clone().unwrap().0, Option::None) {
 				if token.token_type == TokenType::Semicolon {
 					// Ending
 					end_index = Option::Some(index);
@@ -143,6 +149,9 @@ fn parse_variant(
 					panic!("Variable connection or Semicolon expected, got {:?}", token);
 				};
 			} else {
+				// Ignoring whitespace
+				if token.token_type == TokenType::Whitespace { continue; };
+				
 				if value == Option::None {
 					// So here'll go variant value (Text again)
 					if token.token_type != TokenType::Text {
