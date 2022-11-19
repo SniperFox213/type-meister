@@ -2,7 +2,7 @@
 
 ### Overview
 
-Type Meister (name will most likely be changed) is a small but pretty complicated (on the inside) command-line tool, that allows you to write cross-language interfaces, enums and so on using type meister's readable and pretty easy syntax. You only need to write types once and type meister's cli will generate all needed class, interface and enums definitions in every major programming language (planned support of TypeScript, Rust and Dart; more to come)
+Type Meister *(name will most likely be changed)* is a small but pretty complicated (on the inside) command-line tool, that allows you to write cross-language interfaces, enums and so on using type meister's readable and pretty easy syntax. You only need to write types once and type meister's cli will generate all needed class, interface and enums definitions in every major programming language *(planned support of TypeScript, Rust and Dart; more to come)*
 
 ### Examples
 
@@ -33,10 +33,10 @@ interface Parent {
 
 ### Future plans
 
-- [] Comments
-- [] Extendable interfaces
-- [] Default values
-- [] Method functions, constructors *(very complicated thing, I'll most likely do it in, like, 3000 years)*
+- [ ] Comments  
+- [ ] Extendable interfaces  
+- [ ] Default values  
+- [ ] Method functions, constructors *(very complicated thing, I'll most likely do it in, like, 3000 years)*  
     Example of transform functions:  
     ```
     interface Transformer_Test {
@@ -84,4 +84,4 @@ interface Parent {
 
 ### Todo
 
-1. Rewrite parser. We need to get rid of Parser struct, and move back to parse_tokens function. We also need not to skip Whitespace characters - we need to properly parse them. And this (not skipping whitespaces) will require a looot of code rewriting.
+- [ ] Rewrite parser. We need to get rid of Parser struct, and move back to parse_tokens function. We also need not to skip Whitespace characters - we need to properly parse them. And this (not skipping whitespaces) will require a looot of code rewriting.
