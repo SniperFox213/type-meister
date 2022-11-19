@@ -37,7 +37,7 @@ interface Parent {
 - [ ] Extendable interfaces  
 - [ ] Default values  
 - [ ] Method functions, constructors *(very complicated thing, I'll most likely do it in, like, 3000 years)*  
-    Example of transform functions:  
+    Example of methods:  
     ```
     interface Transformer_Test {
         required day: Number;
@@ -58,7 +58,7 @@ interface Parent {
                 month = "0" + month;
             };
 
-            return f"{day}.{month}.{year}";
+            return format("{}.{}.{}", day, month, year);
         };
 
         // Or abstract methods??? Idk
