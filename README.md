@@ -32,6 +32,17 @@ interface Parent {
 };
 ```
 
+### Todo
+
+- [x] Rewrite parser. We need to get rid of Parser struct, and move back to parse_tokens function. We also need not to skip Whitespace characters - we need to properly parse them. And this (not skipping whitespaces) will require a looot of code rewriting.
+- [ ] Rust-like errors
+- [ ] Rewrite/Optimize entities parsing functions and make them more readable
+- [ ] Write codegen abstract class
+- [ ] Write first TypeScript codegen
+- [ ] Write normal CLI
+- [ ] VSCode Syntax Highlighting extension
+- [ ] VSCode Linter
+
 ### Future plans
 
 - [ ] Comments  
@@ -82,7 +93,3 @@ interface Parent {
         };
     };
     ```
-
-### Todo
-
-- [ ] Rewrite parser. We need to get rid of Parser struct, and move back to parse_tokens function. We also need not to skip Whitespace characters - we need to properly parse them. And this (not skipping whitespaces) will require a looot of code rewriting.
