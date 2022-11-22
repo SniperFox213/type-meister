@@ -37,6 +37,12 @@ interface Parent {
 - [x] Rewrite parser. We need to get rid of Parser struct, and move back to parse_tokens function. We also need not to skip Whitespace characters - we need to properly parse them. And this (not skipping whitespaces) will require a looot of code rewriting.
 - [ ] Rust-like errors
 - [ ] Rewrite/Optimize entities parsing functions and make them more readable
+    - [x] Refactor interface parsing functions
+    - [ ] Refactor interface's variables parsing functions
+    - [ ] ...enum parsing functions
+    - [ ] ...variable type parsing functions
+- [ ] Add boolean type
+- [ ] Add number type
 - [ ] Write codegen abstract class
 - [ ] Write first TypeScript codegen
 - [ ] Write normal CLI
