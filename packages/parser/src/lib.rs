@@ -12,6 +12,7 @@ use lexer::{
 pub mod entities;
 pub mod helpers;
 pub mod types;
+pub mod errors;
 
 #[derive(Debug)]
 pub enum Entity {

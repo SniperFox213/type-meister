@@ -61,7 +61,13 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 	// Interface name
 	// > Text
 	{
-		let (index, token) = next_token_with_index(tokens, current_index, Option::None);
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(token) => token,
+			Err(_) => {
+				// todo
+				panic!("Unexpected error");
+			}
+		};
 
 		if token.token_type == TokenType::Text {
 			// Updating interface name
@@ -77,7 +83,13 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 	// 
 	// Right Curly Braces
 	{
-		let (index, token) = next_token_with_index(tokens, current_index, Option::None);
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(token) => token,
+			Err(_) => {
+				// todo
+				panic!("Unexpected error");
+			}
+		};
 
 		if token.token_type != TokenType::RightCurlyBraces {
 			panic!("Right curly braces expected, got {:?}", token);
@@ -149,7 +161,13 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 				// Interface is parsed. Checking if we have a semicolon after
 				// this brace
 				{
-					let (index, token) = next_token_with_index(tokens, index, Option::None);
+					let (index, token) = match next_token_with_index(tokens, index, Option::None) {
+						Ok(token) => token,
+						Err(_) => {
+							// todo
+							panic!("Unexpected error");
+						}
+					};
 
 					if token.token_type != TokenType::Semicolon {
 						panic!("Semicolon expected, got {:?}", token);

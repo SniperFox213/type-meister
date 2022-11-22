@@ -2,6 +2,8 @@ use core::ops::Range;
 
 use lexer::tokens::{TokenDeclaration, TokenType};
 
+use crate::errors::ParserError;
+
 pub fn create_linear_numbers_array(mut from: usize, to: usize) -> Vec<usize> {
 	let mut numbers = Vec::<usize>::new();
 
@@ -29,7 +31,7 @@ pub fn next_token_with_index(
 	tokens: &Vec<TokenDeclaration>,
 	start_index: usize,
 	mut skip: Option<usize>,
-) -> (usize, TokenDeclaration) {
+) -> Result<(usize, TokenDeclaration), ParserError> {
 	if skip == Option::None {
 		skip = Option::Some(1);
 	};
@@ -60,10 +62,10 @@ pub fn next_token_with_index(
 
 	if found_token.is_none() {
 		// Todo ignore this panic?
-		panic!("No token found");
-	};
+		return Err(ParserError::empty())
+	}
 
-	found_token.unwrap()
+	Ok(found_token.unwrap())
 }
 
 pub fn next_token(
@@ -71,7 +73,14 @@ pub fn next_token(
 	start_index: usize,
 	mut skip: Option<usize>,
 ) -> TokenDeclaration {
-	next_token_with_index(tokens, start_index, skip).1
+	match next_token_with_index(tokens, start_index, skip) {
+		Ok(token) => {
+			token.1
+		},
+		Err(_) => {
+			panic!("To implement");
+		}
+	}
 }
 
 pub fn next_token_index(
@@ -79,5 +88,12 @@ pub fn next_token_index(
 	start_index: usize,
 	mut skip: Option<usize>,
 ) -> usize {
-	next_token_with_index(tokens, start_index, skip).0
+	match next_token_with_index(tokens, start_index, skip) {
+		Ok(token) => {
+			token.0
+		},
+		Err(_) => {
+			panic!("To implement");
+		}
+	}
 }
