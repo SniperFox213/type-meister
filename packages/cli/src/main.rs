@@ -4,12 +4,7 @@ use parser::get_ast_tree;
 fn main() {
 	let source = "
     interface Test {
-		optional const_property: String { \"Constant    string variable!\" };
-    
-		enum Status {
-			TEST: untest;
-			UNTEST: test;
-		};
+		optional const_property: String { \" Hello there!!  \" };
 	};
     ";
 	let tokens = get_tokens(source);
