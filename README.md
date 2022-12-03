@@ -54,7 +54,9 @@ interface Parent {
     }
     ```
     Either to store custom information, or to provide additional information and settings
-    to codegen
+    to codegen. 
+
+    In this example, `rename_all` meta-property is codegen-specific - it'll change all interface's variable names to camelCase. In this example, generated User interface's variable `is_registered` will become `isRegistered`.
 - [ ] Write codegen abstract class
 - [ ] Write first TypeScript codegen
 - [ ] Write normal CLI
