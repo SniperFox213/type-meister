@@ -49,7 +49,7 @@ pub enum TokenType {
 	EnumerateDeclaration,
 
 	// Text
-	#[regex("[a-zA-Z_-]+")]
+	#[regex("[a-zA-Z_0-9]+")]
 	Text,
 
 	// Multi-line text helpers

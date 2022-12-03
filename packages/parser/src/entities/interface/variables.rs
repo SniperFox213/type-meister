@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use lexer::tokens::{TokenDeclaration, TokenType};
 
-use crate::{types::{VariableType, parse_variable_type}, helpers::{next_token_index, create_linear_numbers_array}};
+use crate::{types::{VariableType, parse_variable_type}, helpers::{next_token_index, create_linear_numbers_array, next_token_with_index}};
 
 #[derive(Debug)]
 
@@ -12,6 +12,16 @@ pub struct InterfaceVariable {
 	pub is_required: bool,
 }
 
+//
+// Interface variable
+//
+// Example:
+// ...
+// optional is_registered: String;
+// ...
+//
+// Structure:
+// 1. (OptionalModifier | RequiredModifier) Text VariableConnection (StringType | BooleanType | IntegerType | ...)
 pub fn parse_variable(
 	tokens: &Vec<TokenDeclaration>,
 	start_index: usize,
@@ -23,125 +33,136 @@ pub fn parse_variable(
 	);
 
 	// Variable options
-	let mut is_required: Option<bool> = Option::None;
-	let mut name: Option<(usize, String)> = Option::None;
+	let mut is_required: Option<bool>;
+	let mut name: Option<String>;
 	let mut variable_type: Option<VariableType> = Option::None;
 
-	let mut end_index: Option<usize> = Option::None;
+	let mut current_index: usize = start_index;
 	let mut parsed_indicies: Vec<usize> = Vec::new();
 
-	for (index, token) in tokens.iter().enumerate() {
-		if index <= 0 {
-			continue;
-		}
-		if index < start_index {
-			continue;
-		};
-		if parsed_indicies.contains(&index) {
-			continue;
-		};
-
-		// Modifiers or variable name expected (if variable name is not present)
-		if name == Option::None {
-			match token.token_type.clone() {
-				// Requir<ance> (???) modifiers
-				TokenType::RequiredModifier | TokenType::OptionalModifier => {
-					if (is_required == Option::None) {
-						is_required = Option::Some(token.token_type == TokenType::RequiredModifier);
-					} else {
-						if (is_required.unwrap() && token.token_type == TokenType::OptionalModifier)
-							|| (!is_required.unwrap()
-								&& token.token_type == TokenType::RequiredModifier)
-						{
-							panic!(
-								"This variable is already {}. It can not be both",
-								if is_required.unwrap() {
-									"required"
-								} else {
-									"optional"
-								}
-							);
-						} else {
-							panic!(
-								"This variable is already {}.",
-								if is_required.unwrap() {
-									"required"
-								} else {
-									"optional"
-								}
-							);
-						}
-					};
-				}
-				TokenType::Text => {
-					name = Option::Some((index, token.value.clone().unwrap()));
-				}
-				TokenType::Whitespace => { /* Ignoring */ }
-				_ => {
-					panic!(
-						"Variable modifiers or variable name expected, got: {:?}",
-						token
-					);
-				}
+	// 
+	// First of - we need to determine if this
+	// variable is optional or required.
+	{
+		let token = match tokens.get(current_index) {
+			Some(token) => token,
+			None => {
+				panic!("Variable access modifier expected, gotnothing");
 			}
+		};
+
+		// Optional Modifier
+		if token.token_type == TokenType::OptionalModifier {
+			is_required = Option::Some(false);
+		// Required Modifier
+		} else if token.token_type == TokenType::RequiredModifier {
+			is_required = Option::Some(true);
+		// Error
 		} else {
-			// Name is present.
-			if index == next_token_index(tokens, name.clone().unwrap().0, Option::None) {
-				// VariableConnection expected
-				if token.token_type != TokenType::VariableConnection {
-					panic!(": expected, got {:?}", token);
-				}
-			} else {
-				if variable_type == Option::None {
-					// Variable type expected
-					match token.token_type.clone() {
-						TokenType::StringType => {
-							let (variable, range) = parse_variable_type(tokens, index);
-							variable_type = Option::Some(variable);
-
-							// Adding this range to our parsed_indicies array
-							for parsed_index in create_linear_numbers_array(range.start, range.end)
-							{
-								parsed_indicies.push(parsed_index);
-							}
-						}
-						TokenType::Whitespace => { /* Ignoring */ }
-						_ => {
-							panic!("Variable type expected, got {:?}", token);
-						}
-					};
-				} else {
-					// Ignoring whitespaces
-					if token.token_type == TokenType::Whitespace {
-						continue;
-					};
-
-					// Semicolon expected
-					if token.token_type != TokenType::Semicolon {
-						panic!("Semicolon expected, got {:?}", token);
-					} else {
-						// Variable parsing ended
-						end_index = Option::Some(index);
-						break;
-					};
-				}
-			};
+			panic!("Variable modifier expected, got {:?}", token);
 		};
 	}
 
-	if end_index == Option::None {
-		panic!("No end index");
-	};
+	//
+	// Variable name
+	// > Text
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(token) => token,
+			Err(_) => {
+				panic!("Variable name expected, got nothing");
+			}
+		};
 
+		if token.token_type != TokenType::Text {
+			panic!("Variable name expected, got {:?}", token);
+		};
+
+		// Updating variable's name
+		name = token.value;
+
+		// Updating current_index
+		current_index = index;
+	}
+
+	//
+	// VariableConnection
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(token) => token,
+			Err(_) => {
+				panic!("VariableConnection expected, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::VariableConnection {
+			panic!("Variable connection expected, got {:?}", token);
+		};
+
+		// Updating current_index
+		current_index = index;
+	}
+
+	// 
+	// And, finally, we have variable type
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(token) => token,
+			Err(_) => {
+				panic!("Variable type expected, got nothing");
+			}
+		};
+
+		// Parsing variable type
+		match token.token_type {
+			TokenType::StringType => {
+				let (variable, range) = parse_variable_type(tokens, index);
+				variable_type = Option::Some(variable);
+
+				// Adding this range to our parsed_indicies array
+				for parsed_index in create_linear_numbers_array(range.start, range.end)
+				{
+					parsed_indicies.push(parsed_index);
+				}
+			},
+			TokenType::Whitespace => { /* Ignoring */ },
+			_ => {
+				panic!("Variable type expected, got {:?}", token);
+			}
+		};
+
+		// Updating current_index
+		current_index = index;
+	}
+
+	//
+	// Lastly, we expect semicolon
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(token) => token,
+			Err(_) => {
+				panic!("Semicolon expected, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::Semicolon {
+			panic!("Semicolon expected, got {:?}", token);
+		};
+
+		// Updating current_index
+		current_index = index;
+	}
+
+	// Returning our variable information
 	(
 		InterfaceVariable {
-			name: name.unwrap().1,
+			name: name.unwrap(),
 			variable_type: variable_type.unwrap(),
 			is_required: is_required.unwrap(),
 		},
 		Range {
 			start: start_index,
-			end: end_index.unwrap(),
+			end: current_index + 1,
 		},
 	)
 }

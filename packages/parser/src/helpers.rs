@@ -34,6 +34,8 @@ pub fn next_token_with_index(
 ) -> Result<(usize, TokenDeclaration), ParserError> {
 	if skip == Option::None {
 		skip = Option::Some(1);
+	} else {
+		skip = Option::Some(skip.unwrap() + 1);
 	};
 
 	let mut skipped = 0;

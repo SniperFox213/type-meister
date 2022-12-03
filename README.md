@@ -38,7 +38,8 @@ interface Parent {
 - [ ] Rust-like errors
 - [ ] Rewrite/Optimize entities parsing functions and make them more readable
     - [x] Refactor interface parsing functions
-    - [ ] Refactor interface's variables parsing functions
+    - [x] Refactor interface's variables parsing functions
+    - [ ] ...string type parsing functions
     - [ ] ...enum parsing functions
     - [ ] ...variable type parsing functions
 - [ ] Add boolean type

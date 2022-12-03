@@ -4,8 +4,10 @@ use parser::get_ast_tree;
 fn main() {
 	let source = "
     interface Test {
-		optional const_property: String { \" Hello there!!  \" };
+		optional const_variable: String;
 	};
+
+	interface Test_3 {};
     ";
 	let tokens = get_tokens(source);
 	let tree = get_ast_tree(tokens);

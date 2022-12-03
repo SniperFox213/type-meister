@@ -1,5 +1,5 @@
 use crate::{
-	helpers::{create_linear_numbers_array, next_token_with_index},
+	helpers::{create_linear_numbers_array, next_token_with_index, next_token},
 	Entity, Node,
 };
 use core::ops::Range;
@@ -44,7 +44,6 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 	// Parsing info
 	let mut current_index = start_index;
 	let mut parsed_indicies = Vec::<usize>::new();
-	let mut end_index: Option<usize> = Option::None;
 
 	// 
 	// Parsing First Line of structure
@@ -98,10 +97,9 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 		current_index = index;
 	};
 
-	println!("start_index: {}, current_index: {}", start_index, current_index);
-
 	// 
 	// Parsing interface's body
+	// 
 	for (index, token) in tokens.iter().enumerate() {
 		// Starting parsing from interface's body
 		if index <= current_index {
@@ -158,25 +156,9 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 			// 
 			// Left Curly Braces
 			TokenType::LeftCurlyBraces => {
-				// Interface is parsed. Checking if we have a semicolon after
-				// this brace
-				{
-					let (index, token) = match next_token_with_index(tokens, index, Option::None) {
-						Ok(token) => token,
-						Err(_) => {
-							// todo
-							panic!("Unexpected error");
-						}
-					};
-
-					if token.token_type != TokenType::Semicolon {
-						panic!("Semicolon expected, got {:?}", token);
-					};
-
-					// Updating end_index and breaking loop
-					end_index = Option::Some(index);
-                    break;
-				};
+				// Interface is parsed. Breaking from loop
+				current_index = index;
+				break;
 			}
 			TokenType::Whitespace => { /* Ignoring */ }
 			_ => {
@@ -188,14 +170,40 @@ pub fn parse_interface(tokens: &Vec<TokenDeclaration>, start_index: usize) -> No
 		};
 	}
 
-	if end_index == Option::None {
-		panic!("No end index");
-	};
+	//
+	// LeftCurlyBrace
+	{
+		let token = match tokens.get(current_index) {
+			Some(token) => token,
+			None => {
+				panic!("LeftCurlyBraces expected, got nothing!");
+			}
+		};
+
+		if token.token_type != TokenType::LeftCurlyBraces {
+			panic!("Left curly braces expected, got {:?}", token);
+		};
+	}
+
+	// 
+	// Semicolon
+	{
+		let (_, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(token) => token,
+			Err(_) => {
+				panic!("Semicolon expected, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::Semicolon {
+			panic!("Semicolon expected, got {:?}", token);
+		};
+	}
 
 	Node {
 		range: Range {
 			start: start_index,
-			end: end_index.unwrap(),
+			end: current_index + 1,
 		},
 		nodes,
 		entity: Entity::Interface(Interface {
