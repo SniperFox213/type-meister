@@ -38,7 +38,6 @@ pub fn parse_variable(
 	let mut variable_type: Option<VariableType> = Option::None;
 
 	let mut current_index: usize = start_index;
-	let mut parsed_indicies: Vec<usize> = Vec::new();
 
 	// 
 	// First of - we need to determine if this
@@ -116,14 +115,8 @@ pub fn parse_variable(
 		// Parsing variable type
 		match token.token_type {
 			TokenType::StringType => {
-				let (variable, range) = parse_variable_type(tokens, index);
+				let (variable, _) = parse_variable_type(tokens, index);
 				variable_type = Option::Some(variable);
-
-				// Adding this range to our parsed_indicies array
-				for parsed_index in create_linear_numbers_array(range.start, range.end)
-				{
-					parsed_indicies.push(parsed_index);
-				}
 			},
 			TokenType::Whitespace => { /* Ignoring */ },
 			_ => {

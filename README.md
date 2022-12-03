@@ -44,6 +44,17 @@ interface Parent {
     - [ ] ...variable type parsing functions
 - [ ] Add boolean type
 - [ ] Add number type
+- [ ] Interface/Variable metadata
+    Something like
+    ```
+    #rename_all = camelCase
+    #custom_meta_property = "String const!!!"
+    interface User {
+        required is_registered: Boolean;
+    }
+    ```
+    Either to store custom information, or to provide additional information and settings
+    to codegen
 - [ ] Write codegen abstract class
 - [ ] Write first TypeScript codegen
 - [ ] Write normal CLI
