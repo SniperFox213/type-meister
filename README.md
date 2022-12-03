@@ -44,7 +44,7 @@ interface Parent {
     - [ ] ...variable type parsing functions
 - [ ] Add boolean type
 - [ ] Add number type
-- [ ] Interface/Variable metadata
+- [ ] Interface/Variable metadata   
     Something like
     ```
     #rename_all = camelCase
