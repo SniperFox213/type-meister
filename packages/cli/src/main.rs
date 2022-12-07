@@ -4,7 +4,7 @@ use parser::get_ast_tree;
 fn main() {
 	let source = "
     interface Test {
-		optional const_variable: String;
+		optional const_variable: String { \"Multi-line string!\" };
 	};
 
 	interface Test_3 {};

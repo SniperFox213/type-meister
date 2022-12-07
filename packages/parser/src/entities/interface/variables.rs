@@ -115,17 +115,17 @@ pub fn parse_variable(
 		// Parsing variable type
 		match token.token_type {
 			TokenType::StringType => {
-				let (variable, _) = parse_variable_type(tokens, index);
+				let (variable, range) = parse_variable_type(tokens, index);
 				variable_type = Option::Some(variable);
+
+				// Updating current_index
+				current_index = range.end;
 			},
 			TokenType::Whitespace => { /* Ignoring */ },
 			_ => {
 				panic!("Variable type expected, got {:?}", token);
 			}
 		};
-
-		// Updating current_index
-		current_index = index;
 	}
 
 	//

@@ -39,7 +39,7 @@ interface Parent {
 - [ ] Rewrite/Optimize entities parsing functions and make them more readable
     - [x] Refactor interface parsing functions
     - [x] Refactor interface's variables parsing functions
-    - [ ] ...string type parsing functions
+    - [x] ...string type parsing functions
     - [ ] ...enum parsing functions
     - [ ] ...variable type parsing functions
 - [ ] Add boolean type
