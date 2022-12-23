@@ -41,7 +41,7 @@ interface Parent {
     - [x] Refactor interface's variables parsing functions
     - [x] ...string type parsing functions
     - [ ] ...enum parsing functions
-    - [ ] ...variable type parsing functions
+    - [x] ...variable type parsing functions
 - [ ] Add boolean type
 - [ ] Add number type
 - [ ] Interface/Variable metadata   
