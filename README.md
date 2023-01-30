@@ -40,8 +40,17 @@ interface Parent {
     - [x] Refactor interface parsing functions
     - [x] Refactor interface's variables parsing functions
     - [x] ...string type parsing functions
-    - [ ] ...enum parsing functions
+    - [x] ...enum parsing functions
     - [x] ...variable type parsing functions
+- [ ] Allow enum variants without value declaraation    
+    For example:
+    ```
+    enum TestEnum {
+        BANNED;
+        ONE_LINE;
+    }
+    ```
+    Because currently you must specify enum value.
 - [ ] Add boolean type
 - [ ] Add number type
 - [ ] Interface/Variable metadata   

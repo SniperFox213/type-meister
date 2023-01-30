@@ -1,7 +1,8 @@
 use std::ops::Range;
 
 use crate::{
-	helpers::{create_linear_numbers_array, next_token_index},
+	helpers::{create_linear_numbers_array, next_token_index, next_token_with_index},
+	types::{string::{parse_multiline_string}},
 	Entity, Node, Tree,
 };
 use lexer::tokens::{TokenDeclaration, TokenType};
@@ -18,175 +19,248 @@ pub struct EnumVariant {
 	pub value: Option<String>,
 }
 
-pub fn parse_enum(tokens: &Vec<TokenDeclaration>, start_index: usize) -> Node {
-	// Enumerate information
-	let mut name: Option<String> = Option::None;
+//
+// Enumeration
+//
+// Example:
+//````
+// enum Name {
+//   VarName: VarValue;
+// }
+// ```
+//
+// Structure:
+// 1. EnumerationDeclaration Text RightCurlyBraces
+// 2. Text VariableConnection (Text | Quotes Text Quotes) Semicolon
+// 3. LeftCurlyBraces Semicolon
+pub fn parse_enum(
+	tokens: &Vec<TokenDeclaration>, 
+	start_index: usize
+) -> Node {
+	// Enum options
+	let mut name: Option<String>;
 	let mut variants: Vec<EnumVariant> = Vec::new();
 
-	let mut is_inside_enum = false;
+	let mut current_index: usize = start_index;
 	let mut parsed_indicies: Vec<usize> = Vec::new();
-	let mut end_index: Option<usize> = Option::None;
 
-	// Parsing
-	for (index, token) in tokens.iter().enumerate() {
-		if index <= 0 {
-			continue;
+	//
+	// EnumDeclaration
+	{
+		let token = match tokens.get(current_index) {
+			Some(token) => token,
+			None => {
+				panic!("Enum declaration expected, got nothing");
+			}
 		};
-		if index - 1 < start_index {
-			continue;
+
+		if token.token_type != TokenType::EnumerateDeclaration {
+			panic!("Enum declaration expected, got {:?}", token);
 		};
-
-		if (is_inside_enum) {
-			// Skipping parsed content
-			if parsed_indicies.contains(&index) {
-				continue;
-			};
-
-			match token.token_type.clone() {
-				// Text expected (or left curly braces)
-				TokenType::Text => {
-					// Parsing enumerate variant...
-					let (variant, range) = parse_variant(tokens, index);
-
-					// Adding this range to parsed_indicies
-					for parsed_index in create_linear_numbers_array(range.start, range.end) {
-						parsed_indicies.push(parsed_index);
-					}
-
-					// Adding this variant to variants
-					variants.push(variant);
-				}
-				TokenType::LeftCurlyBraces => {
-					// Enum has ended, checking if we have a semicolon
-					// after this brace
-					if (tokens.len() >= index + 1)
-						&& (tokens.get(index + 1).unwrap().token_type == TokenType::Semicolon)
-					{
-						end_index = Option::Some(index + 1);
-						break;
-					};
-
-					panic!("Semicolon expected");
-				}
-				TokenType::Whitespace => { /* Ignoring */ }
-				_ => {
-					panic!("Enum variant name expected, got {:?}", token);
-				}
-			};
-		} else {
-			if index == next_token_index(tokens, start_index, Option::None) {
-				// Enum name expected
-				if token.token_type != TokenType::Text {
-					panic!("Enum name expected, got {:?}", token);
-				};
-
-				name = token.value.clone();
-			} else {
-				// Ignoring whitespaces
-				if token.token_type == TokenType::Whitespace {
-					continue;
-				};
-
-				// Right curly braces expected
-				if token.token_type != TokenType::RightCurlyBraces {
-					panic!("Right curly braces expected, got {:?}", token);
-				} else {
-					is_inside_enum = true;
-				};
-			};
-		};
-	}
-
-	if end_index == Option::None {
-		panic!("No end index");
 	};
 
-	// Returning new Enum node
+	//
+	// Text
+	// as enum name
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(response) => response,
+			Err(_) => {
+				panic!("Enum name expected, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::Text {
+			panic!("Enum name expected, got {:?}", token);
+		};
+
+		name = token.value;
+		current_index = index;
+	};
+
+	//
+	// RightCurlyBraces
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(response) => response,
+			Err(_) => {
+				panic!("RightCurlyBraces expected, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::RightCurlyBraces {
+			panic!("RightCurlyBraces expected, got {:?}", token);
+		};
+
+		current_index = index;
+	};
+
+	//
+	// Parsing all enum variants
+	for (index, token) in tokens.iter().enumerate() {
+		if index <= current_index {
+			continue;
+		};
+
+		if parsed_indicies.contains(&index) {
+			continue;
+		};
+
+		match token.token_type {
+			TokenType::Text => {
+				let (variant, range) = parse_variant(tokens, index);
+
+				variants.push(variant);
+				
+				for parsed_index in create_linear_numbers_array(range.start, range.end) {
+					parsed_indicies.push(parsed_index);
+				};
+			}
+			TokenType::Whitespace => { /* Ignoring */ }
+			TokenType::LeftCurlyBraces => {
+				// Breaking from loop to end enum parsing
+				current_index = index;
+				break;
+			}
+			_ => {
+				panic!("Enum name or LeftCurlyBraces expected, got {:?}", token);
+			}
+		};
+	};
+
+	//
+	// Semicolon
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(response) => response,
+			Err(_) => {
+				panic!("Expected Semicolon, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::Semicolon {
+			panic!("Semicolon expected, got {:?}", token);	
+		};
+
+		current_index = index;
+	};
+
+	// Returning our enum
 	Node {
 		range: Range {
 			start: start_index,
-			end: end_index.unwrap(),
+			end: current_index,
 		},
 		nodes: Vec::new(),
 		entity: Entity::Enum(Enum {
 			name: name.unwrap(),
 			variants,
-		}),
+		})
 	}
 }
 
+//
+// Parse enumeration variant
+//
+// Structure:
+// 1. Text VariableConnection (Text | Quotes Text Quotes)
 fn parse_variant(
 	tokens: &Vec<TokenDeclaration>,
 	start_index: usize,
 ) -> (EnumVariant, Range<usize>) {
-	let mut name: Option<(usize, String)> = Option::None;
+	let mut name: Option<String> = Option::None;
 	let mut value: Option<String> = Option::None;
 
-	let mut end_index: Option<usize> = Option::None;
+	let mut current_index = start_index;
 
-	for (index, token) in tokens.iter().enumerate() {
-		if index < start_index {
-			continue;
+	//
+	// Text
+	{
+		let token = match tokens.get(current_index) {
+			Some(token) => token,
+			None => {
+				panic!("Text expected, got nothing");
+			}
 		};
 
-		if name == Option::None {
-			// Name expected
-			if token.token_type != TokenType::Text {
-				panic!("Variant name expected, got {:?}", token);
-			} else {
-				// Updating variant's name
-				name = Option::Some((index, token.value.clone().unwrap()));
-			};
-		} else {
-			// Next token after name must be VariableConnection (or Semicolon). So let's
-			// check this!
-			if index == next_token_index(tokens, name.clone().unwrap().0, Option::None) {
-				if token.token_type == TokenType::Semicolon {
-					// Ending
-					end_index = Option::Some(index);
-					break;
-				};
-
-				if token.token_type != TokenType::VariableConnection {
-					panic!("Variable connection or Semicolon expected, got {:?}", token);
-				};
-			} else {
-				// Ignoring whitespace
-				if token.token_type == TokenType::Whitespace {
-					continue;
-				};
-
-				if value == Option::None {
-					// So here'll go variant value (Text again)
-					if token.token_type != TokenType::Text {
-						panic!("Enumerate value expected, got {:?}", token);
-					};
-
-					// Updating variant's value;
-					value = token.value.clone();
-				} else {
-					// Semicolon expected
-					if token.token_type != TokenType::Semicolon {
-						panic!("Semicolon expected, got {:?}", token);
-					};
-
-					// Ending
-					end_index = Option::Some(index);
-					break;
-				};
-			};
+		if token.token_type != TokenType::Text {
+			panic!("Text expected, got {:?}", token);
 		};
-	}
 
-	// Returning this variant
+		name = token.value.clone();
+	};
+
+	//
+	// VariableConnection
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(response) => response,
+			Err(_) => {
+				panic!("VariableConnection expected, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::VariableConnection {
+			panic!("VariableConnection expected, got {:?}", token);
+		};
+
+		current_index = index;
+	};
+
+	//
+	// (Text | Quotes Text Quotes)
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(response) => response,
+			Err(_) => {
+				panic!("Text or Quotes expected, got nothing");
+			}
+		};
+
+		match token.token_type {
+			TokenType::Text => {
+				value = token.value;
+				current_index = index;
+			}
+			TokenType::Quotes => {
+				// Parsing multi-line string using string's type helper
+				let (line_value, range) = parse_multiline_string(tokens, index);
+
+				value = Option::Some(line_value);
+				current_index = range.end;
+			}
+			_ => {
+				panic!("Text or Quotes expected, got {:?}", token);
+			}
+		};
+	};
+
+	//
+	// Semicolon expected
+	{
+		let (index, token) = match next_token_with_index(tokens, current_index, Option::None) {
+			Ok(response) => response,
+			Err(_) => {
+				panic!("Semicolon expected, got nothing");
+			}
+		};
+
+		if token.token_type != TokenType::Semicolon {
+			panic!("Semicolon expected, got {:?}", token);
+		};
+
+		current_index = index;
+	};
+
+	// Returning our variant
 	(
 		EnumVariant {
-			name: name.unwrap().1,
+			name: name.unwrap(),
 			value: value,
 		},
 		Range {
 			start: start_index,
-			end: end_index.unwrap(),
+			end: current_index,
 		},
 	)
 }

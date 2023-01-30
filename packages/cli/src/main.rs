@@ -5,6 +5,10 @@ fn main() {
 	let source = "
     interface Test {
 		optional const_variable: String { \"Multi-line string!\" };
+		enum TestEnum {
+			Test: Test2;
+			TestMulti: \"Multi-line enum!!!\";
+		};
 	};
 
 	interface Test_3 {};
