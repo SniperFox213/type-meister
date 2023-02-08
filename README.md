@@ -36,7 +36,7 @@ interface Parent {
 
 - [x] Rewrite parser. We need to get rid of Parser struct, and move back to parse_tokens function. We also need not to skip Whitespace characters - we need to properly parse them. And this (not skipping whitespaces) will require a looot of code rewriting.
 - [ ] Rust-like errors
-- [ ] Rewrite/Optimize entities parsing functions and make them more readable
+- [x] Rewrite/Optimize entities parsing functions and make them more readable
     - [x] Refactor interface parsing functions
     - [x] Refactor interface's variables parsing functions
     - [x] ...string type parsing functions
