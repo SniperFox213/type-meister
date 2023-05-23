@@ -2,7 +2,7 @@
 
 ### Overview
 
-Type Meister *(name will most likely be changed)* is a small but pretty complicated (on the inside) command-line tool, that allows you to write cross-language interfaces, enums and so on using type meister's readable and pretty easy syntax. You only need to write types once and type meister's cli will generate all needed class, interface and enums definitions in every major programming language *(planned support of TypeScript, Rust and Dart; more to come)*
+Type Meister *(name will most likely be changed)* is a small command-line tool, that allows you to write cross-language interfaces, enums and so on using type meister's readable and pretty easy syntax. You only need to write types once and type meister's cli will generate all needed class, interface and enums definitions in every major programming language *(planned support of TypeScript, Rust and Dart; more to come)*
 
 ### Examples
 
